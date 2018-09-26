@@ -44,6 +44,8 @@ RUN conda install xeus-cling xtensor xtensor-blas -c conda-forge -c QuantStack
 # Maxima
 RUN apt-get update && apt-get -yq dist-upgrade && \
     apt-get install -yq --no-install-recommends \
+    autoconf \
+    automake \
     sbcl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
