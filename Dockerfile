@@ -41,36 +41,57 @@ RUN apt-get update && apt-get -yq dist-upgrade && \
     rm -rf /var/lib/apt/lists/*
 RUN conda install xeus-cling xtensor xtensor-blas -c conda-forge -c QuantStack
 
-# Maxima
+# gnuplot
 RUN apt-get update && apt-get -yq dist-upgrade && \
     apt-get install -yq --no-install-recommends \
-    autoconf \
-    automake \
-    sbcl && \
+    gnuplot && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN pip install gnuplot_kernel && \
+    python3 -m gnuplot_kernel install
+
+# XPP
+ENV XPP_DIR=/opt/xppaut
+RUN mkdir /opt/xppaut && \
+    cd /tmp && \
+    wget http://www.math.pitt.edu/~bard/bardware/xppaut_latest.tar.gz && \
+    tar xvf xppaut_latest.tar.gz -C /opt/xppaut && \
+    cd /opt/xppaut && \
+    make && \
+    ln -fs /opt/xppaut/xppaut /usr/local/bin/xppaut && \
+    rm /tmp/xppaut_latest.tar.gz && \
+    fix-permissions $XPP_DIR /usr/local/bin
+
+# VFGEN
+RUN apt-get update && apt-get -yq dist-upgrade && \
+    apt-get install -yq --no-install-recommends \
+    ginac-tools \
+    libginac-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+# First needs MiniXML
 RUN cd /tmp && \
-    git clone https://github.com/andrejv/maxima && \
-    cd maxima && \
-    sh bootstrap && \
-    ./configure --enable-sbcl && \
+    mkdir /tmp/mxml && \
+    wget https://github.com/michaelrsweet/mxml/releases/download/v2.11/mxml-2.11.tar.gz && \
+    tar xvf mxml-2.11.tar.gz -C /tmp/mxml && \
+    cd /tmp/mxml && \
+    ./configure && \
     make && \
     make install && \
     cd /tmp && \
-    rm -rf maxima
-RUN mkdir /opt/quicklisp && \
+    rm mxml-2.11.tar.gz && \
+    rm -rf /tmp/mxml
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+RUN mkdir /opt/vfgen && \
     cd /tmp && \
-    curl -O https://beta.quicklisp.org/quicklisp.lisp && \
-    sbcl --load quicklisp.lisp --non-interactive --eval '(quicklisp-quickstart:install :path "/opt/quicklisp/")' && \
-    yes '' | sbcl --load /opt/quicklisp/setup.lisp --non-interactive --eval '(ql:add-to-init-file)' && \
-    rm quicklisp.lisp && \
-    fix-permissions /opt/quicklisp
-RUN cd /opt && \
-    git clone https://github.com/robert-dodier/maxima-jupyter && \
-    cd maxima-jupyter && \
-    python3 ./install-maxima-jupyter.py --root=/opt/maxima-jupyter && \
-    sbcl --load /opt/quicklisp/setup.lisp --non-interactive load-maxima-jupyter.lisp && \
-    fix-permissions /opt/maxima-jupyter /usr/local/share/jupyter/kernels
+    git clone https://github.com/WarrenWeckesser/vfgen && \
+    cd vfgen/src && \
+    make -f Makefile.vfgen && \
+    cp ./vfgen /opt/vfgen && \
+    cd /tmp && \
+    rm -rf vfgen && \
+    ln -fs /opt/vfgen/vfgen /usr/local/bin/vfgen
 
 RUN fix-permissions ${HOME}/.local
 
