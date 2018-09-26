@@ -20,10 +20,7 @@ RUN pip install octave_kernel feather-format
 RUN pip install cffi_magic \
     jupyter-c-kernel && \
     install_c_kernel && \
-    rm -rf /home/$NB_USER/.cache/pip && \
-    mv ${HOME}/.local/share/jupyter/kernels/c /usr/local/share/jupyter/kernels/c && \
-    rm -rf  ${HOME}/.local && \
-    fix-permissions /usr/local/share/jupyter/kernels ${HOME}
+    rm -rf /home/$NB_USER/.cache/pip
 
 # Fortran
 RUN cd /tmp && \
@@ -33,5 +30,4 @@ RUN cd /tmp && \
     jupyter-kernelspec install fortran_spec/ && \
     cd /tmp && \
     rm -rf jupyter-fortran-kernel && \
-    rm -rf /home/$NB_USER/.cache/pip && \
-    fix-permissions /usr/local/share/jupyter/kernels ${HOME}
+    rm -rf /home/$NB_USER/.cache/pip
