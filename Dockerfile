@@ -10,24 +10,25 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get -yq dist-upgrade && \
     apt-get install -yq --no-install-recommends \
     octave && \
-    octave --eval 'pkg install -forge dataframe' && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-RUN pip install octave_kernel feather-format
-
-
-# C
-RUN pip install cffi_magic \
-    jupyter-c-kernel && \
-    install_c_kernel && \
-    rm -rf /home/$NB_USER/.cache/pip
+RUN pip install --no-cache-dir octave_kernel
 
 # Fortran
 RUN cd /tmp && \
     git clone https://github.com/ZedThree/jupyter-fortran-kernel && \
     cd jupyter-fortran-kernel && \
-    pip install . && \
+    pip install --no-cache-dir . && \
     jupyter-kernelspec install fortran_spec/ && \
     cd /tmp && \
-    rm -rf jupyter-fortran-kernel && \
-    rm -rf /home/$NB_USER/.cache/pip
+    rm -rf jupyter-fortran-kernel
+
+# C
+RUN pip install --no-cache-dir cffi_magic \
+    jupyter-c-kernel && \
+    install_c_kernel
+
+# C++
+RUN conda install xeus-cling xtensor xtensor-blas -c conda-forge -c QuantStack
+
+
