@@ -72,3 +72,10 @@ RUN cd /opt && \
     sbcl --load /opt/quicklisp/setup.lisp --non-interactive load-maxima-jupyter.lisp && \
     fix-permissions /opt/maxima-jupyter /usr/local/share/jupyter/kernels
 
+USER $NB_USER
+
+RUN npm install -g ijavascript \
+    plotly-notebook-js \
+    ode-rk4 && \
+    ijsinstall
+
