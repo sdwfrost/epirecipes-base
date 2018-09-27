@@ -148,6 +148,6 @@ USER root
 
 RUN mv $HOME/.local/share/jupyter/kernels/javascript /usr/local/share/jupyter/kernels/ && \
     chmod -R go+rx /usr/local/share/jupyter && \
-    fix-permissions /usr/local/share/jupyter
+    fix-permissions /usr/local/share/jupyter ${HOME}/.cache
 
 USER ${NB_USER}
