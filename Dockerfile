@@ -93,12 +93,47 @@ RUN mkdir /opt/vfgen && \
     rm -rf vfgen && \
     ln -fs /opt/vfgen/vfgen /usr/local/bin/vfgen
 
+# Maxima
+
+RUN apt-get update && apt-get -yq dist-upgrade && \
+    apt-get install -yq --no-install-recommends \
+    automake \
+    autoconf \
+    ed \
+    gzip \
+    libzmq3-dev \
+    sbcl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN ln -s /bin/tar /bin/gtar
+
+RUN cd /tmp && \
+    git clone https://github.com/andrejv/maxima && \
+    cd maxima && \
+    sh bootstrap && \
+    ./configure --enable-sbcl && \
+    make && \
+    make install && \
+    cd /tmp && \
+    rm -rf maxima
+RUN mkdir /opt/quicklisp && \
+    cd /tmp && \
+    curl -O https://beta.quicklisp.org/quicklisp.lisp && \
+    sbcl --load quicklisp.lisp --non-interactive --eval '(quicklisp-quickstart:install :path "/opt/quicklisp/")' && \
+    yes '' | sbcl --load /opt/quicklisp/setup.lisp --non-interactive --eval '(ql:add-to-init-file)' && \
+    rm quicklisp.lisp && \
+    fix-permissions /opt/quicklisp
+RUN cd /opt && \
+    git clone https://github.com/robert-dodier/maxima-jupyter && \
+    cd maxima-jupyter && \
+    python3 ./install-maxima-jupyter.py --root=/opt/maxima-jupyter && \
+    sbcl --load /opt/quicklisp/setup.lisp --non-interactive load-maxima-jupyter.lisp && \
+    fix-permissions /opt/maxima-jupyter
+
 RUN fix-permissions ${HOME}/.local
 
 USER ${NB_USER}
 
-RUN npm install -g ijavascript \
-    plotly-notebook-js \
-    ode-rk4 && \
+RUN npm install -g ijavascript && \
     ijsinstall
 
