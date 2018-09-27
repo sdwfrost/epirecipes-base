@@ -32,6 +32,9 @@ RUN apt-get update && apt-get -yq dist-upgrade && \
 RUN pip install --no-cache-dir cffi_magic \
     jupyter-c-kernel && \
     install_c_kernel
+RUN mv $HOME/.local/share/jupyter/kernels/c /usr/local/share/jupyter/kernels/ && \
+    chmod -R go+rx /usr/local/share/jupyter && \
+    fix-permissions /usr/local/share/jupyter
 
 # C++
 RUN apt-get update && apt-get -yq dist-upgrade && \
@@ -128,6 +131,10 @@ RUN cd /opt && \
     cd maxima-jupyter && \
     python3 ./install-maxima-jupyter.py --root=/opt/maxima-jupyter && \
     sbcl --load /opt/quicklisp/setup.lisp --non-interactive load-maxima-jupyter.lisp && \
+    install -D maxima.js /opt/conda/lib/python3.6/site-packages/notebook/static/components/codemirror/mode/maxima/maxima.js && \
+    patch /opt/conda/lib/python3.6/site-packages/notebook/static/components/codemirror/mode/meta.js /opt/maxima-jupyter/codemirror-mode-meta-patch && \  
+    install /opt/maxima-jupyter/maxima_lexer.py /opt/conda/lib/python3.6/site-packages/pygments/lexers/maxima_lexer.py && \
+    patch /opt/conda/lib/python3.6/site-packages/pygments/lexers/_mapping.py /opt/maxima-jupyter/pygments-mapping-patch && \
     fix-permissions /opt/maxima-jupyter
 
 RUN fix-permissions ${HOME}/.local
@@ -137,3 +144,10 @@ USER ${NB_USER}
 RUN npm install -g ijavascript && \
     ijsinstall
 
+USER root
+
+RUN mv $HOME/.local/share/jupyter/kernels/javascript /usr/local/share/jupyter/kernels/ && \
+    chmod -R go+rx /usr/local/share/jupyter && \
+    fix-permissions /usr/local/share/jupyter
+
+USER ${NB_USER}
